@@ -1,0 +1,77 @@
+-- Crear la base de datos
+CREATE DATABASE gestionactivos;
+USE GestionActivos;
+
+-- Tabla de Usuarios
+CREATE TABLE Usuarios (
+    id_usuario INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    rol ENUM('administrador', 'operador', 'ventas') NOT NULL,
+    estado ENUM('activo', 'inactivo') DEFAULT 'activo'
+);
+
+-- Tabla de Clientes
+CREATE TABLE Clientes (
+    id_cliente INT AUTO_INCREMENT PRIMARY KEY,
+    razon_social VARCHAR(100) NOT NULL,
+    contacto VARCHAR(100),
+    telefono VARCHAR(15),
+    email VARCHAR(100),
+    direccion VARCHAR(255)
+);
+
+-- Tabla de Gestión de Activos
+CREATE TABLE GestionActivos (
+    id_gestion INT AUTO_INCREMENT PRIMARY KEY,
+    id_cliente INT NOT NULL,
+    id_encargado INT NOT NULL, -- Usuario encargado general
+    id_operarios INT NOT NULL, -- Usuario operario que realizó la gestión
+    id_factura INT, -- Relación opcional con factura
+    fecha DATE NOT NULL,
+    situacion ENUM('pendiente', 'completada', 'en progreso') DEFAULT 'pendiente',
+    FOREIGN KEY (id_cliente) REFERENCES Clientes(id_cliente) ON DELETE CASCADE,
+    FOREIGN KEY (id_encargado) REFERENCES Usuarios(id_usuario) ON DELETE CASCADE,
+    FOREIGN KEY (id_operarios) REFERENCES Usuarios(id_usuario) ON DELETE CASCADE,
+    FOREIGN KEY (id_factura) REFERENCES Facturas(id_factura) ON DELETE SET NULL
+);
+
+-- Tabla de Activos
+CREATE TABLE Activos (
+    id_activo INT AUTO_INCREMENT PRIMARY KEY,
+    nombre_activo VARCHAR(100) NOT NULL,
+    descripcion TEXT,
+    id_gestion INT NOT NULL,
+    cantidad INT NOT NULL,
+    valor_unitario DECIMAL(10, 2) NOT NULL,
+    FOREIGN KEY (id_gestion) REFERENCES GestionActivos(id_gestion) ON DELETE CASCADE
+);
+
+-- Tabla de Facturas
+CREATE TABLE Facturas (
+    id_factura INT AUTO_INCREMENT PRIMARY KEY,
+    id_cliente INT NOT NULL,
+    id_usuario INT NOT NULL, -- Usuario que creó la factura
+    fecha DATE NOT NULL,
+    total DECIMAL(10, 2) NOT NULL,
+    descripcion TEXT,
+    estado ENUM('emitida', 'pagada', 'anulada') DEFAULT 'emitida',
+    FOREIGN KEY (id_cliente) REFERENCES Clientes(id_cliente) ON DELETE CASCADE,
+    FOREIGN KEY (id_usuario) REFERENCES Usuarios(id_usuario) ON DELETE CASCADE
+);
+
+-- Tabla de Cotizaciones
+CREATE TABLE Cotizaciones (
+    id_cotizacion INT AUTO_INCREMENT PRIMARY KEY,
+    id_cliente INT NOT NULL,
+    id_usuario INT NOT NULL, -- Usuario que creó la cotización
+    fecha DATE NOT NULL,
+    total DECIMAL(10, 2) NOT NULL,
+    descripcion TEXT,
+    estado ENUM('pendiente', 'aceptada', 'rechazada') DEFAULT 'pendiente',
+    FOREIGN KEY (id_cliente) REFERENCES Clientes(id_cliente) ON DELETE CASCADE,
+    FOREIGN KEY (id_usuario) REFERENCES Usuarios(id_usuario) ON DELETE CASCADE
+);
+ALTER TABLE Usuarios
+ADD COLUMN contrasena VARCHAR(255) NOT NULL;
